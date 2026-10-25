@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0D1120" />
+    <meta name="twitter:title" content="词光 · 一词一画，点亮六级" />
+    <meta name="twitter:image" content="brand/og-card.jpg" />
+    <title>词光 Word Atlas · 一词一画，点亮六级</title>
+    <meta name="description" content="2,118 个大学英语六级新增词（已去除四级词），英美发音。学会一个，就点亮一颗星。免费、开源、无需注册。" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="词光 · 一词一画，点亮六级" />
+    <meta property="og:description" content="2,118 个六级词。学会一个，就点亮一颗星。免费、开源、无需注册。" />
+    <meta property="og:image" content="brand/og-card.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="/cet6-words/favicon.svg" />
+    <link rel="apple-touch-icon" href="/cet6-words/icon-512.png" />
+    <link rel="manifest" href="/cet6-words/manifest.webmanifest" />
+    <link rel="preload" href="/cet6-words/atlas/index.json" as="fetch" crossorigin="anonymous" />
+    <script>
+      // Apply the saved theme (dark by default) before first paint.
+      (function () {
+        var t = "dark";
+        try {
+          var s = JSON.parse(localStorage.getItem("word-atlas:settings") || "{}");
+          if (s.theme) t = s.theme;
+        } catch (e) {}
+        if (t !== "system") document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+    <script type="module" crossorigin src="/cet6-words/assets/index-CLf1Yz9L.js"></script>
+    <link rel="stylesheet" crossorigin href="/cet6-words/assets/index-Ec_4tF4G.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
