@@ -1,5 +1,5 @@
 /* Word Atlas offline cache: app shell network-first, everything else cache-first. */
-const VERSION = "atlas-v2";
+const VERSION = "atlas-v3";
 const SHELL = `${VERSION}-shell`;
 const MEDIA = `${VERSION}-media`;
 
@@ -24,6 +24,8 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET" || req.headers.has("range")) return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
+  // Audio goes straight to the network: iOS needs real 206 range responses.
+  if (/\/atlas\/audio\/|\/sfx\/|\.mp3$/.test(url.pathname) || req.destination === "audio") return;
   const isShell = req.mode === "navigate" || url.pathname.endsWith("/index.json");
   if (isShell) {
     event.respondWith(
