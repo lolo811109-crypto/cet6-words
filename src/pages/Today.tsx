@@ -11,6 +11,7 @@ import { Galaxy } from "../galaxy/Galaxy";
 import { Highlight, Pronounce } from "../ui/EntryView";
 import { Illustration } from "../ui/Illustration";
 import { Ring } from "../ui/Ring";
+import { DailyTasks } from "../ui/DailyTasks";
 
 const BRAND = `${import.meta.env.BASE_URL}brand`;
 
@@ -150,6 +151,8 @@ export function Today() {
           </div>
         </div>
       </section>
+
+      <DailyTasks onLearn={() => start({ extra: 20 })} onReview={() => start({ reviewOnly: true })} />
 
       <div className="today-grid">
         <WordOfDay />

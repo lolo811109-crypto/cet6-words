@@ -5,6 +5,7 @@ import { isMastered } from "../store/srs";
 import { dayKey, exportBackup, importBackup, resetProgress, store, useStore, type Settings } from "../store/store";
 import { toast } from "../ui/Toast";
 import { streakOf } from "./Today";
+import { Galaxy, taskStarIds, useGalaxyLayout } from "../galaxy/Galaxy";
 
 export function Me({ privateAvailable }: { privateAvailable: boolean }) {
   const atlas = useAtlas();
@@ -12,6 +13,8 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
   const settings = useStore((s) => s.settings);
   const saveError = useStore((s) => s.saveError);
   const file = useRef<HTMLInputElement>(null);
+  const layout = useGalaxyLayout();
+  const taskIds = useMemo(() => taskStarIds(layout.ids, progress.days, progress.cards), [layout, progress.days, progress.cards]);
 
   const stats = useMemo(() => {
     const cards = Object.values(progress.cards);
@@ -85,6 +88,16 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
             <small>分钟</small>
           </dd>
         </div>
+      </section>
+
+      <section className="panel task-stars-panel">
+        <Galaxy mode="mini" taskStars={taskIds} className="me-galaxy" />
+        <p className="task-count">
+          <span className="task-dot" />
+          <span>
+            任务星已点亮 <b>{taskIds.length}</b> 颗 · 金色大星是完成「每日三件小事」的日子
+          </span>
+        </p>
       </section>
 
       <div className="me-grid">

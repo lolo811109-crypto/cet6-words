@@ -29,3 +29,10 @@ test("rejects other versions and unknown settings", () => {
   assert.equal(s.theme, "dark");
   assert.equal(s.retention, 0.9);
 });
+
+test("old day records without tasks stay valid; tasks are sanitized", () => {
+  const p = sanitizeProgress({ version: 2, days: { "2026-10-01": { n: 3, r: 4, c: 2, t: 60 }, "2026-10-02": { n: 1, r: 1, c: 1, t: 5, tasks: { sentence: "I adapt.", star: true } }, "2026-10-03": { n: 1, r: 1, c: 1, t: 5, tasks: { star: "yes", sentence: 5 } } } }, "x");
+  assert.equal(p.days["2026-10-01"].tasks, undefined);
+  assert.deepEqual(p.days["2026-10-02"].tasks, { sentence: "I adapt.", star: true });
+  assert.equal(p.days["2026-10-03"].tasks, undefined);
+});

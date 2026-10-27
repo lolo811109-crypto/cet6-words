@@ -4120,3 +4120,31 @@ a:hover .mark-needle,
 .streak-panel .mini-stats div:first-child dd {
   color: var(--ochre);
 }
+
+/* ---------- 每日三件小事 ---------- */
+.daily-tasks { margin-top: 20px; }
+.dt-head { display: flex; justify-content: space-between; align-items: baseline; }
+.dt-count { font-weight: 700; color: #e6b422; }
+.daily-tasks ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 12px; }
+.dt-item { display: flex; gap: 12px; align-items: flex-start; }
+.dt-check { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--ink-4); display: grid; place-items: center; margin-top: 2px; }
+.dt-item.is-done .dt-check { background: #e6b422; border-color: #e6b422; color: #1a2035; }
+.dt-item.is-done b { text-decoration: line-through; opacity: 0.7; }
+.dt-body { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.dt-body small { color: var(--ink-3); word-break: break-word; }
+.dt-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-small { padding: 6px 14px; font-size: 14px; min-height: 0; justify-self: start; }
+.btn-ghost { background: transparent; }
+.dt-sentence { display: grid; gap: 8px; }
+.dt-sentence textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--ink-4); background: transparent; color: var(--ink); resize: vertical; }
+.dt-msg { color: #e6b422 !important; }
+.dt-star { margin: 14px 0 0; display: flex; gap: 6px; align-items: center; color: var(--ink-3); font-size: 14px; }
+.dt-star.is-lit { color: #e6b422; }
+.task-stars-panel { margin-bottom: 20px; }
+.task-stars { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin: 10px 0; color: var(--ink-4); }
+.task-stars span { display: grid; place-items: center; }
+.task-stars .is-lit { color: #e6b422; }
+.me-galaxy { width: 100%; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; display: block; position: relative; }
+.task-count { margin: 10px 0 0; font-size: 14px; color: var(--ink-3); display: flex; align-items: center; gap: 8px; }
+.task-count b { color: #ffcc33; }
+.task-dot { width: 12px; height: 12px; border-radius: 50%; background: #ffcc33; flex: none; }

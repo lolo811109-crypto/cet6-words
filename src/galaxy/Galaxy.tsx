@@ -45,7 +45,10 @@ export function Galaxy({
   ignite,
   className = "",
   focus,
+  taskStars,
 }: {
+  /** Word ids that carry a lit task day (每日三件小事); drawn as solid gold stars. */
+  taskStars?: string[];
   mode?: "full" | "mini";
   /** Words to show as today's gold stars. */
   highlight?: string[];
@@ -121,8 +124,12 @@ export function Galaxy({
       const i = layout.index.get(id);
       if (i !== undefined) states[i] = 0;
     });
+    taskStars?.forEach((id) => {
+      const i = layout.index.get(id);
+      if (i !== undefined) states[i] = 4;
+    });
     eng.setStates(states);
-  }, [layout, cards, highlightSet, ignite]);
+  }, [layout, cards, highlightSet, ignite, taskStars]);
 
   // Session summary: stars light up one after another, then a soft voice line.
   useEffect(() => {
@@ -388,3 +395,33 @@ export function Galaxy({
 }
 
 const clampDist = (d: number) => Math.max(0.35, Math.min(4.2, d));
+
+/** One star per lit task day: a word first met that day, else a stable word picked from the date. */
+export function taskStarIds(
+  ids: string[],
+  days: Record<string, { tasks?: { star?: boolean } }>,
+  cards: Record<string, { seen: number }>,
+) {
+  const out: string[] = [];
+  const used = new Set<string>();
+  const lit = Object.keys(days).filter((k) => days[k].tasks?.star).sort();
+  for (const k of lit) {
+    const [y, m, d] = k.split("-").map(Number);
+    const a = new Date(y, m - 1, d).getTime();
+    const b = a + 864e5;
+    let pick = Object.keys(cards).find((id) => cards[id].seen >= a && cards[id].seen < b && !used.has(id));
+    if (!pick && ids.length) {
+      let h = 0;
+      for (const ch of k) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+      for (let j = 0; j < ids.length && !pick; j++) {
+        const id = ids[(h + j * 7919) % ids.length];
+        if (!used.has(id)) pick = id;
+      }
+    }
+    if (pick) {
+      used.add(pick);
+      out.push(pick);
+    }
+  }
+  return out;
+}

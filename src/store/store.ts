@@ -24,6 +24,13 @@ export interface DayStat {
   r: number; // graded reviews (first attempts)
   c: number; // correct first attempts
   t: number; // active seconds
+  /** 每日三件小事: sentence written today, and whether today's task star is lit. */
+  tasks?: DayTasks;
+}
+
+export interface DayTasks {
+  sentence?: string;
+  star?: boolean;
 }
 
 export interface TypingRound {
@@ -143,7 +150,17 @@ export function sanitizeProgress(v: unknown, datasetId: string): Progress {
   if (isObj(v.days))
     for (const [k, d] of Object.entries(v.days))
       if (/^\d{4}-\d{2}-\d{2}$/.test(k) && isObj(d) && num(d.n, 0) && num(d.r, 0) && num(d.c, 0) && num(d.t, 0))
+      {
         out.days[k] = { n: d.n as number, r: d.r as number, c: d.c as number, t: d.t as number };
+        // Older data has no tasks field; keep only well-formed values.
+        const t = d.tasks;
+        if (isObj(t)) {
+          const tasks: DayTasks = {};
+          if (typeof t.sentence === "string") tasks.sentence = t.sentence.slice(0, 500);
+          if (t.star === true) tasks.star = true;
+          if (tasks.sentence !== undefined || tasks.star) out.days[k].tasks = tasks;
+        }
+      }
   if (Array.isArray(v.typing))
     out.typing = v.typing
       .filter(
@@ -271,7 +288,7 @@ export function bumpDay(p: Progress, patch: Partial<DayStat>): Progress {
     ...p,
     days: {
       ...p.days,
-      [k]: { n: d.n + (patch.n ?? 0), r: d.r + (patch.r ?? 0), c: d.c + (patch.c ?? 0), t: d.t + (patch.t ?? 0) },
+      [k]: { ...d, n: d.n + (patch.n ?? 0), r: d.r + (patch.r ?? 0), c: d.c + (patch.c ?? 0), t: d.t + (patch.t ?? 0) },
     },
   };
 }
@@ -319,4 +336,12 @@ export function resetProgress() {
   emit();
   markDirty();
   flush();
+}
+
+export function setDayTasks(patch: Partial<DayTasks>) {
+  store.progress((p) => {
+    const k = dayKey();
+    const d = p.days[k] ?? { n: 0, r: 0, c: 0, t: 0 };
+    return { ...p, days: { ...p.days, [k]: { ...d, tasks: { ...d.tasks, ...patch } } } };
+  });
 }

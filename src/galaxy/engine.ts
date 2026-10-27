@@ -63,7 +63,7 @@ function multiply(a: Float32Array, b: Float32Array) {
 const STAR_VS = `#version 300 es
 in vec3 aPos; in vec3 aColor; in float aSeed; in float aState;
 uniform mat4 uVP; uniform float uTime, uIntro, uScale, uHover, uMotion;
-out vec3 vColor; out float vAlpha; out float vGold;
+out vec3 vColor; out float vAlpha; out float vGold; out float vTask;
 void main(){
   float t = clamp((uIntro - aSeed * 0.4) / 0.6, 0.0, 1.0);
   float e = 1.0 - pow(1.0 - t, 3.0);
@@ -81,18 +81,23 @@ void main(){
   if (aState > 0.5) { size = 7.5; alpha = 1.0; col = mix(aColor, vec3(1.0, 0.85, 0.5), 0.35); }
   if (aState > 1.5) { size = 10.0; alpha = 1.0; col = mix(aColor, vec3(1.0, 0.97, 0.9), 0.6); }
   if (aState > 2.5) { size = 13.0; alpha = 1.0; col = vec3(1.0, 0.74, 0.34); }
+  // Task stars (每日三件小事): solid gold, larger, crisp edge, no halo.
+  // Gentle twinkle: slow ~3s breath per star, off when reduced motion is requested.
+  float ttw = mix(1.0, 0.82 + 0.18 * sin(uTime * 2.1 + aSeed * 40.0), uMotion);
+  if (aState > 3.5) { size = 30.0 * mix(1.0, 0.94 + 0.06 * ttw, uMotion); alpha = ttw; col = vec3(1.0, 0.82, 0.3); }
   if (abs(float(gl_VertexID) - uHover) < 0.5) { size *= 2.4; alpha = 1.0; col = vec3(1.0); }
   gl_PointSize = max(1.2, size * uScale / clip.w) * (aState > 0.5 ? 1.0 : tw);
   vColor = col;
   vAlpha = alpha * e * (aState > 0.5 ? mix(1.0, tw, 0.35) : tw);
-  vGold = step(2.5, aState);
+  vGold = step(2.5, aState) * (1.0 - step(3.5, aState));
+  vTask = step(3.5, aState);
   // Today's stars carry a wide halo, so they read even in a small view.
   gl_PointSize *= mix(1.0, 2.6, vGold);
 }`;
 
 const STAR_FS = `#version 300 es
 precision mediump float;
-in vec3 vColor; in float vAlpha; in float vGold;
+in vec3 vColor; in float vAlpha; in float vGold; in float vTask;
 out vec4 o;
 void main(){
   vec2 c = gl_PointCoord * 2.0 - 1.0;
@@ -100,6 +105,8 @@ void main(){
   if (d > 1.0) discard;
   float core = mix(9.0, 40.0, vGold);
   float a = (exp(-d * core) + exp(-d * mix(2.5, 3.5, vGold)) * mix(0.28, 0.55, vGold)) * vAlpha;
+  // Task star: crisp gold core plus a faint soft halo.
+  if (vTask > 0.5) a = ((1.0 - smoothstep(0.22, 0.32, d)) + exp(-d * 4.0) * 0.38) * vAlpha;
   o = vec4(vColor * a, a);
 }`;
 
@@ -457,8 +464,22 @@ export class GalaxyEngine {
       const d = this.screen[i * 3 + 2];
       if (d <= 0) continue;
       const st = this.states[i];
-      const size = (st > 2.5 ? 7 : st > 1.5 ? 5 : st > 0.5 ? 3.5 : 1.3) * (i === this.hover ? 2 : 1) * Math.min(this.w, this.h) / 520 / d;
+      const size = (st > 3.5 ? 12 : st > 2.5 ? 7 : st > 1.5 ? 5 : st > 0.5 ? 3.5 : 1.3) * (i === this.hover ? 2 : 1) * Math.min(this.w, this.h) / 520 / d;
       const a = (st > 0.5 ? 0.9 : 0.3 * (0.7 + 0.3 * Math.sin(t + i))) * intro;
+      if (st > 3.5) {
+        const x = this.screen[i * 3], y = this.screen[i * 3 + 1];
+        const tw = this.opts.reducedMotion ? 1 : 0.82 + 0.18 * Math.sin(t * 2.1 + i * 1.7);
+        const halo = g.createRadialGradient(x, y, 0, x, y, size * 1.6);
+        halo.addColorStop(0, `rgba(255,209,77,${0.3 * tw * intro})`);
+        halo.addColorStop(1, "rgba(255,209,77,0)");
+        g.fillStyle = halo;
+        g.fillRect(x - size * 1.6, y - size * 1.6, size * 3.2, size * 3.2);
+        g.fillStyle = `rgba(255,209,77,${tw * intro})`;
+        g.beginPath();
+        g.arc(x, y, size / 2, 0, Math.PI * 2);
+        g.fill();
+        continue;
+      }
       g.fillStyle = `rgba(${(c[i * 3] * 255) | 0},${(c[i * 3 + 1] * 255) | 0},${(c[i * 3 + 2] * 255) | 0},${a})`;
       g.fillRect(this.screen[i * 3] - size / 2, this.screen[i * 3 + 1] - size / 2, Math.max(1, size), Math.max(1, size));
     }
